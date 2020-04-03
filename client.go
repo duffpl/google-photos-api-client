@@ -77,9 +77,8 @@ func (h httpClient) batch(ids []string) ([]model.MediaItem, error) {
 func (h httpClient) BatchGetItems(ids []string) ([]model.MediaItem, error) {
 	pageCount := (len(ids) / 50) + 1
 	mediaItems := make([]model.MediaItem, 0)
-	for i := 0; i< pageCount;i++ {
-
-		idsSlice := ids[i*50:int(math.Min(float64(i*50+50),float64(len(ids))))]
+	for i := 0; i < pageCount; i++ {
+		idsSlice := ids[i*50 : int(math.Min(float64(i*50+50), float64(len(ids))))]
 		result, _ := h.batch(idsSlice)
 		mediaItems = append(mediaItems, result...)
 	}
@@ -150,7 +149,6 @@ func (h httpClient) GetAlbums(options ...RequestOption) (result []model.Album, n
 		Path:     "v1/albums",
 		RawQuery: q.Encode(),
 	}
-
 
 	response, _ := h.doGetRequest(u.String())
 	responseModel := &getAlbumsResponse{}
