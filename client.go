@@ -1,4 +1,4 @@
-package client
+package google_photos_api_client
 
 import (
 	"bytes"
