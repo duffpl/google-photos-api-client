@@ -9,6 +9,7 @@ import (
 	"net/http"
 )
 
+// Interface for https://developers.google.com/photos/library/reference/rest/v1/albums resource
 type AlbumsService interface {
 	List(options *AlbumsListOptions, pageToken string, ctx context.Context) (result []model.Album, nextPageToken string, err error)
 	ListAll(options *AlbumsListOptions, ctx context.Context) ([]model.Album, error)
@@ -30,6 +31,9 @@ type HttpAlbumsService struct {
 	path string
 }
 
+// Lists all albums
+//
+// Doc: https://developers.google.com/photos/library/reference/rest/v1/albums/list
 func (s HttpAlbumsService) List(options *AlbumsListOptions, pageToken string, ctx context.Context) (result []model.Album, nextPageToken string, err error) {
 	requestOptions := AlbumsListOptions{
 		PageSize: 50,
@@ -52,6 +56,7 @@ func (s HttpAlbumsService) List(options *AlbumsListOptions, pageToken string, ct
 	return responseModel.Albums, responseModel.NextPageToken, nil
 }
 
+// Synchronous wrapper for ListAllAsync
 func (s HttpAlbumsService) ListAll(options *AlbumsListOptions, ctx context.Context) ([]model.Album, error) {
 	albumsC, errorsC := s.ListAllAsync(options, ctx)
 	result := make([]model.Album, 0)
@@ -68,8 +73,9 @@ func (s HttpAlbumsService) ListAll(options *AlbumsListOptions, ctx context.Conte
 	}
 }
 
+// Asynchronous wrapper for List that takes care of pagination. Returned channel has buffer size of 50
 func (s HttpAlbumsService) ListAllAsync(options *AlbumsListOptions, ctx context.Context) (<-chan model.Album, <-chan error) {
-	albumsC := make(chan model.Album)
+	albumsC := make(chan model.Album, 50)
 	errorsC := make(chan error)
 	pageToken := ""
 	go func() {
