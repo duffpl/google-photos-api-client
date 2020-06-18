@@ -11,12 +11,23 @@ type MediaItem struct {
 	Filename        string          `json:"filename"`
 }
 
+type APIStatus struct {
+	Code int `json:"code"`
+	Message string `json:"message"`
+	Details []interface{} `json:"details"`
+}
+
+type MediaItemWithStatus struct {
+	MediaItem MediaItem `json:"mediaItem"`
+	Status    APIStatus `json:"status"`
+}
+
 type MediaMetadata struct {
-	CreationTime  string        `json:"creationTime"`
-	Width         string        `json:"width"`
-	Height        string        `json:"height"`
-	PhotoMetadata PhotoMetadata `json:"photo,omitempty"`
-	VideoMetadata VideoMetadata `json:"video,omitempty"`
+	CreationTime  string         `json:"creationTime"`
+	Width         string         `json:"width"`
+	Height        string         `json:"height"`
+	PhotoMetadata *PhotoMetadata `json:"photo,omitempty"`
+	VideoMetadata *VideoMetadata `json:"video,omitempty"`
 }
 
 type PhotoMetadata struct {
@@ -34,6 +45,7 @@ type VideoMetadata struct {
 	Fps         float32 `json:"fps"`
 	Status      string  `json:"status"`
 }
+
 type ContributorInfo struct {
 	ProfilePictureBaseURL string `json:"profilePictureBaseUrl"`
 	DisplayName           string `json:"displayName"`
