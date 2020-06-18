@@ -15,6 +15,8 @@ I'm not sure when (or if) I'll be implementing methods I don't need (like upload
 
 Error handling might be a bit flaky but should be ok.
 
+[godoc documentation](https://godoc.org/github.com/duffpl/google-photos-api-client)
+
 List of implemented endpoints
 
 ### Albums
