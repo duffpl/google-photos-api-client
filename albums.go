@@ -107,7 +107,7 @@ func (s HttpAlbumsService) ListAllAsync(options *AlbumsListOptions, ctx context.
 	return albumsC, errorsC
 }
 
-func NewHttpAlbumsService(authenticatedClient *http.Client) AlbumsService {
+func NewHttpAlbumsService(authenticatedClient *http.Client) HttpAlbumsService {
 	return HttpAlbumsService{
 		c:    internal.NewHttpClient(authenticatedClient),
 		path: "v1/albums",
