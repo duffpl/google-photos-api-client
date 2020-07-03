@@ -1,13 +1,12 @@
 package internal
 
-
 import (
 	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/duffpl/google-photos-api-client/model"
+	"github.com/duffpl/google-photos-api-client/common"
 	"github.com/google/go-querystring/query"
 	"io/ioutil"
 	"net/http"
@@ -29,7 +28,8 @@ func (c *HttpClient) FetchWithGet(path string, queryValues interface{}, response
 	if err != nil {
 		return fmt.Errorf("cannot prepare request: %w", err)
 	}
-	return c.fetchRequest(err, req, responseModel)}
+	return c.fetchRequest(err, req, responseModel)
+}
 
 func (c *HttpClient) FetchWithPost(path string, queryValues interface{}, body interface{}, responseModel interface{}, ctx context.Context) error {
 	req, err := preparePostRequest(path, queryValues, body, ctx)
@@ -49,7 +49,7 @@ func (c *HttpClient) fetchRequest(err error, req *http.Request, responseModel in
 		if res.StatusCode == 404 {
 			return errors.New("url not found")
 		}
-		responseModel = &model.ErrorResponse{}
+		responseModel = &common.ErrorResponse{}
 		errorReturned = true
 	}
 	err = unmarshalResponse(res, responseModel)
@@ -57,7 +57,7 @@ func (c *HttpClient) fetchRequest(err error, req *http.Request, responseModel in
 		return fmt.Errorf("cannot unmarshal response: %w", err)
 	}
 	if errorReturned {
-		return responseModel.(*model.ErrorResponse).Error
+		return responseModel.(*common.ErrorResponse).Error
 	}
 	return nil
 }
@@ -69,7 +69,7 @@ func unmarshalResponse(res *http.Response, dst interface{}) error {
 	}
 	err = json.Unmarshal(b, dst)
 	if err != nil {
-		return fmt.Errorf("json unmarshal error: %w", err)
+		return fmt.Errorf("json unmarshal common: %w", err)
 	}
 	return nil
 }
@@ -111,4 +111,3 @@ func prepareGetRequest(path string, queryValues interface{}, ctx context.Context
 	}
 	return http.NewRequestWithContext(ctx, http.MethodGet, reqUrl.String(), nil)
 }
-

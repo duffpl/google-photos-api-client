@@ -21,14 +21,14 @@ List of implemented endpoints
 
 ### Albums
 Based on https://developers.google.com/photos/library/reference/rest/v1/albums
-* [ ] [albums.addEnrichment](https://developers.google.com/photos/library/reference/rest/v1/albums/addEnrichment)
-* [ ] [albums.batchAddMediaItems](https://developers.google.com/photos/library/reference/rest/v1/albums/batchAddMediaItems)
-* [ ] [albums.batchRemoveMediaItems](https://developers.google.com/photos/library/reference/rest/v1/albums/batchRemoveMediaItems)
-* [ ] [albums.create](https://developers.google.com/photos/library/reference/rest/v1/albums/create)
-* [ ] [albums.get](https://developers.google.com/photos/library/reference/rest/v1/albums/get)
+* [x] [albums.addEnrichment](https://developers.google.com/photos/library/reference/rest/v1/albums/addEnrichment)
+* [x] [albums.batchAddMediaItems](https://developers.google.com/photos/library/reference/rest/v1/albums/batchAddMediaItems)
+* [x] [albums.batchRemoveMediaItems](https://developers.google.com/photos/library/reference/rest/v1/albums/batchRemoveMediaItems)
+* [x] [albums.create](https://developers.google.com/photos/library/reference/rest/v1/albums/create)
+* [x] [albums.get](https://developers.google.com/photos/library/reference/rest/v1/albums/get)
 * [x] [albums.list](https://developers.google.com/photos/library/reference/rest/v1/albums/list)
-* [ ] [albums.share](https://developers.google.com/photos/library/reference/rest/v1/albums/share)
-* [ ] [albums.unshare](https://developers.google.com/photos/library/reference/rest/v1/albums/unshare)
+* [x] [albums.share](https://developers.google.com/photos/library/reference/rest/v1/albums/share)
+* [x] [albums.unshare](https://developers.google.com/photos/library/reference/rest/v1/albums/unshare)
 ### Media items
 * [ ] [mediaItems.batchCreate](https://developers.google.com/photos/library/reference/rest/v1/mediaItems/batchCreate)
 * [x] [mediaItems.batchGet](https://developers.google.com/photos/library/reference/rest/v1/mediaItems/batchGet)
@@ -73,7 +73,6 @@ albums, err := apiClient.Albums.ListAll(
 ...
 ```
 
-### To do
-- tests
-- implement all endpoints
-- verify error handling
+## To do
+- [ ] tests
+- [ ] implement all endpoints

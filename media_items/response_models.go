@@ -1,4 +1,15 @@
-package model
+package media_items
+
+import "github.com/duffpl/google-photos-api-client/common"
+
+type mediaItemsResponse struct {
+	MediaItems    []MediaItem `json:"mediaItems"`
+	NextPageToken string      `json:"nextPageToken"`
+}
+
+type batchGetMediaItemsResponse struct {
+	MediaItemResults []MediaItemWithStatus `json:"mediaItemResults"`
+}
 
 type MediaItem struct {
 	ID              string          `json:"id"`
@@ -11,15 +22,9 @@ type MediaItem struct {
 	Filename        string          `json:"filename"`
 }
 
-type APIStatus struct {
-	Code int `json:"code"`
-	Message string `json:"message"`
-	Details []interface{} `json:"details"`
-}
-
 type MediaItemWithStatus struct {
-	MediaItem MediaItem `json:"mediaItem"`
-	Status    APIStatus `json:"status"`
+	MediaItem MediaItem        `json:"mediaItem"`
+	Status    common.APIStatus `json:"status"`
 }
 
 type MediaMetadata struct {

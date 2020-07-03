@@ -1,4 +1,4 @@
-package google_photos_api_client
+package media_items
 
 // Content category used in search filter
 type ContentCategory string

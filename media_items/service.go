@@ -1,11 +1,10 @@
-package google_photos_api_client
+package media_items
 
 import (
 	"context"
 	"errors"
 	"fmt"
 	"github.com/duffpl/google-photos-api-client/internal"
-	"github.com/duffpl/google-photos-api-client/model"
 	"github.com/imdario/mergo"
 	"net/http"
 	"net/url"
@@ -13,73 +12,16 @@ import (
 
 // Interface for https://developers.google.com/photos/library/reference/rest/v1/mediaItems resource
 type MediaItemsService interface {
-	Get(itemId string, ctx context.Context) (mediaItem *model.MediaItem, err error)
-	List(options *MediaItemsListOptions, pageToken string, ctx context.Context) (mediaItems []model.MediaItem, nextPageToken string, err error)
-	ListAll(options *MediaItemsListOptions, ctx context.Context) ([]model.MediaItem, error)
-	ListAllAsync(options *MediaItemsListOptions, ctx context.Context) (<-chan model.MediaItem, <-chan error)
-	Search(options *MediaItemsSearchOptions, pageToken string, ctx context.Context) (mediaItems []model.MediaItem, nextPageToken string, err error)
-	SearchAll(options *MediaItemsSearchOptions, ctx context.Context) ([]model.MediaItem, error)
-	SearchAllAsync(options *MediaItemsSearchOptions, ctx context.Context) (<-chan model.MediaItem, <-chan error)
-	BatchGetItems(ids []string, ctx context.Context) (mediaItems []model.MediaItemWithStatus, err error)
-	BatchGetItemsAll(ids []string, ctx context.Context) ([]model.MediaItemWithStatus, error)
-	BatchGetItemsAllAsync(ids []string, ctx context.Context) (<-chan model.MediaItemWithStatus, <-chan error)
-}
-
-type MediaItemsListOptions struct {
-	PageSize  int    `url:"pageSize"`
-}
-
-type MediaItemsSearchOptions struct {
-	PageSize  int                     `json:"pageSize"`
-	AlbumId   string                  `json:"albumId,omitEmpty"`
-	Filters   *MediaItemSearchFilters `json:"filters,omitEmpty"`
-}
-
-type MediaItemSearchFilters struct {
-	FeatureFilter            *MediaItemFeatureFilter   `json:"featureFilter,omitEmpty"`
-	DateFilter               *MediaItemDateFilter      `json:"dateFilter, omitEmpty"`
-	ContentFilter            *MediaItemContentFilter   `json:"contentFilter, omitEmpty"`
-	MediaTypeFilter          *MediaItemMediaTypeFilter `json:"mediaTypeFilter, omitEmpty"`
-	IncludeArchivedMedia     bool                      `json:"includeArchivedMedia"`
-	ExcludeNonAppCreatedData bool                      `json:"excludeNonAppCreatedData"`
-}
-
-type MediaItemContentFilter struct {
-	IncludedContentCategories []ContentCategory `json:"includedContentCategories"`
-	ExcludedContentCategories []ContentCategory `json:"excludedContentCategories"`
-}
-
-type MediaItemMediaTypeFilter struct {
-	MediaTypes []MediaType `json:"mediaTypes"`
-}
-
-type MediaItemDateFilter struct {
-	Dates  []MediaItemDateFilterDateItem  `json:"dates"`
-	Ranges []MediaItemDateFilterRangeItem `json:"ranges"`
-}
-
-type MediaItemDateFilterDateItem struct {
-	Year  int `json:"year"`
-	Month int `json:"month"`
-	Day   int `json:"day"`
-}
-
-type MediaItemDateFilterRangeItem struct {
-	StartDate MediaItemDateFilterDateItem `json:"startDate"`
-	EndDate   MediaItemDateFilterDateItem `json:"endDate"`
-}
-
-type MediaItemFeatureFilter struct {
-	IncludedFeatures []Feature `json:"includedFeatures,omitEmpty"`
-}
-
-type batchGetMediaItemsResponse struct {
-	MediaItemResults []model.MediaItemWithStatus `json:"mediaItemResults"`
-}
-
-type mediaItemsResponse struct {
-	MediaItems    []model.MediaItem `json:"mediaItems"`
-	NextPageToken string            `json:"nextPageToken"`
+	Get(itemId string, ctx context.Context) (mediaItem *MediaItem, err error)
+	List(options *ListOptions, pageToken string, ctx context.Context) (mediaItems []MediaItem, nextPageToken string, err error)
+	ListAll(options *ListOptions, ctx context.Context) ([]MediaItem, error)
+	ListAllAsync(options *ListOptions, ctx context.Context) (<-chan MediaItem, <-chan error)
+	Search(options *SearchOptions, pageToken string, ctx context.Context) (mediaItems []MediaItem, nextPageToken string, err error)
+	SearchAll(options *SearchOptions, ctx context.Context) ([]MediaItem, error)
+	SearchAllAsync(options *SearchOptions, ctx context.Context) (<-chan MediaItem, <-chan error)
+	BatchGetItems(ids []string, ctx context.Context) (mediaItems []MediaItemWithStatus, err error)
+	BatchGetItemsAll(ids []string, ctx context.Context) ([]MediaItemWithStatus, error)
+	BatchGetItemsAllAsync(ids []string, ctx context.Context) (<-chan MediaItemWithStatus, <-chan error)
 }
 
 type HttpMediaItemsService struct {
@@ -90,9 +32,9 @@ type HttpMediaItemsService struct {
 // Fetches media item specified by ID
 //
 // Doc: https://developers.google.com/photos/library/reference/rest/v1/mediaItems/get
-func (s HttpMediaItemsService) Get(itemId string, ctx context.Context) (mediaItem *model.MediaItem, err error) {
+func (s HttpMediaItemsService) Get(itemId string, ctx context.Context) (mediaItem *MediaItem, err error) {
 	q := url.Values{"mediaItemId": []string{itemId}}
-	responseModel := &model.MediaItem{}
+	responseModel := &MediaItem{}
 	err = s.c.FetchWithGet(s.path, q, responseModel, ctx)
 	if err != nil {
 		return nil, fmt.Errorf("cannot complete request: %w", err)
@@ -103,7 +45,7 @@ func (s HttpMediaItemsService) Get(itemId string, ctx context.Context) (mediaIte
 // Fetches multiple media items (max 50)
 //
 // Doc: https://developers.google.com/photos/library/reference/rest/v1/mediaItems/batchGet
-func (s HttpMediaItemsService) BatchGetItems(ids []string, ctx context.Context) (mediaItems []model.MediaItemWithStatus, err error) {
+func (s HttpMediaItemsService) BatchGetItems(ids []string, ctx context.Context) (mediaItems []MediaItemWithStatus, err error) {
 	if len(ids) > 50 {
 		return nil, errors.New("max 50 ids allowed")
 	}
@@ -117,9 +59,9 @@ func (s HttpMediaItemsService) BatchGetItems(ids []string, ctx context.Context) 
 }
 
 // Synchronous wrapper for BatchGetItemsAllAsync
-func (s HttpMediaItemsService) BatchGetItemsAll(ids []string, ctx context.Context) ([]model.MediaItemWithStatus, error) {
+func (s HttpMediaItemsService) BatchGetItemsAll(ids []string, ctx context.Context) ([]MediaItemWithStatus, error) {
 	itemsC, errorsC := s.BatchGetItemsAllAsync(ids, ctx)
-	result := make([]model.MediaItemWithStatus, 0)
+	result := make([]MediaItemWithStatus, 0)
 	for {
 		select {
 		case item, ok := <-itemsC:
@@ -135,8 +77,8 @@ func (s HttpMediaItemsService) BatchGetItemsAll(ids []string, ctx context.Contex
 
 // Asynchronous wrapper for BatchGetItems
 // Fetches any number of media items in 50 items chunks.
-func (s HttpMediaItemsService) BatchGetItemsAllAsync(ids []string, ctx context.Context) (<-chan model.MediaItemWithStatus, <-chan error) {
-	itemsC := make(chan model.MediaItemWithStatus)
+func (s HttpMediaItemsService) BatchGetItemsAllAsync(ids []string, ctx context.Context) (<-chan MediaItemWithStatus, <-chan error) {
+	itemsC := make(chan MediaItemWithStatus)
 	errC := make(chan error)
 	go func() {
 		defer close(itemsC)
@@ -149,7 +91,7 @@ func (s HttpMediaItemsService) BatchGetItemsAllAsync(ids []string, ctx context.C
 			default:
 			}
 			sliceStart := i * itemsPerChunk
-			sliceEnd := min((i+1)*itemsPerChunk, len(ids))
+			sliceEnd := internal.Min((i+1)*itemsPerChunk, len(ids))
 			idsChunk := ids[sliceStart:sliceEnd]
 			mediaItems, err := s.BatchGetItems(idsChunk, ctx)
 			if err != nil {
@@ -171,16 +113,16 @@ func (s HttpMediaItemsService) BatchGetItemsAllAsync(ids []string, ctx context.C
 // Fetches all media items. Default page size is 50
 //
 // Doc: https://developers.google.com/photos/library/reference/rest/v1/mediaItems/list
-func (s HttpMediaItemsService) List(options *MediaItemsListOptions, pageToken string, ctx context.Context) (mediaItems []model.MediaItem, nextPageToken string, err error) {
+func (s HttpMediaItemsService) List(options *ListOptions, pageToken string, ctx context.Context) (mediaItems []MediaItem, nextPageToken string, err error) {
 	responseModel := &mediaItemsResponse{}
-	requestOptions := MediaItemsListOptions{
+	requestOptions := ListOptions{
 		PageSize: 50,
 	}
 	if options != nil {
 		_ = mergo.Merge(&requestOptions, options, mergo.WithOverride)
 	}
 	optionsWithToken := struct {
-		MediaItemsListOptions
+		ListOptions
 		PageToken string `url:"pageToken,omitEmpty"`
 	}{
 		requestOptions,
@@ -194,9 +136,9 @@ func (s HttpMediaItemsService) List(options *MediaItemsListOptions, pageToken st
 }
 
 // Synchronous wrapper for ListAllAsync
-func (s HttpMediaItemsService) ListAll(options *MediaItemsListOptions, ctx context.Context) ([]model.MediaItem, error) {
+func (s HttpMediaItemsService) ListAll(options *ListOptions, ctx context.Context) ([]MediaItem, error) {
 	itemsC, errorsC := s.ListAllAsync(options, ctx)
-	result := make([]model.MediaItem, 0)
+	result := make([]MediaItem, 0)
 	for {
 		select {
 		case item, ok := <-itemsC:
@@ -211,8 +153,8 @@ func (s HttpMediaItemsService) ListAll(options *MediaItemsListOptions, ctx conte
 }
 
 // Asynchronous wrapper for List that takes care of pagination. Returned channel has buffer size of 50
-func (s HttpMediaItemsService) ListAllAsync(options *MediaItemsListOptions, ctx context.Context) (<-chan model.MediaItem, <-chan error) {
-	itemsC := make(chan model.MediaItem, 50)
+func (s HttpMediaItemsService) ListAllAsync(options *ListOptions, ctx context.Context) (<-chan MediaItem, <-chan error) {
+	itemsC := make(chan MediaItem, 50)
 	errorsC := make(chan error)
 	pageToken := ""
 	go func() {
@@ -247,8 +189,8 @@ func (s HttpMediaItemsService) ListAllAsync(options *MediaItemsListOptions, ctx 
 // Fetches all media items based on search criteria. Default page size is 50
 //
 // Doc: https://developers.google.com/photos/library/reference/rest/v1/mediaItems/search
-func (s HttpMediaItemsService) Search(options *MediaItemsSearchOptions, pageToken string, ctx context.Context) (mediaItems []model.MediaItem, nextPageToken string, err error) {
-	requestOptions := MediaItemsSearchOptions{
+func (s HttpMediaItemsService) Search(options *SearchOptions, pageToken string, ctx context.Context) (mediaItems []MediaItem, nextPageToken string, err error) {
+	requestOptions := SearchOptions{
 		PageSize: 50,
 	}
 	if options != nil {
@@ -256,7 +198,7 @@ func (s HttpMediaItemsService) Search(options *MediaItemsSearchOptions, pageToke
 	}
 	responseModel := &mediaItemsResponse{}
 	optionsWithToken := struct {
-		MediaItemsSearchOptions
+		SearchOptions
 		PageToken string `json:"pageToken,omitEmpty"`
 	}{
 		requestOptions,
@@ -270,9 +212,9 @@ func (s HttpMediaItemsService) Search(options *MediaItemsSearchOptions, pageToke
 }
 
 // Synchronous wrapper for SearchAllAsync
-func (s HttpMediaItemsService) SearchAll(options *MediaItemsSearchOptions, ctx context.Context) ([]model.MediaItem, error) {
+func (s HttpMediaItemsService) SearchAll(options *SearchOptions, ctx context.Context) ([]MediaItem, error) {
 	itemsC, errorsC := s.SearchAllAsync(options, ctx)
-	result := make([]model.MediaItem, 0)
+	result := make([]MediaItem, 0)
 	for {
 		select {
 		case item, ok := <-itemsC:
@@ -287,8 +229,8 @@ func (s HttpMediaItemsService) SearchAll(options *MediaItemsSearchOptions, ctx c
 }
 
 // Asynchronous wrapper for Search that takes care of pagination. Returned channel has buffer size of 50
-func (s HttpMediaItemsService) SearchAllAsync(options *MediaItemsSearchOptions, ctx context.Context) (<-chan model.MediaItem, <-chan error) {
-	itemsC := make(chan model.MediaItem, 50)
+func (s HttpMediaItemsService) SearchAllAsync(options *SearchOptions, ctx context.Context) (<-chan MediaItem, <-chan error) {
+	itemsC := make(chan MediaItem, 50)
 	errorsC := make(chan error)
 	pageToken := ""
 	go func() {
