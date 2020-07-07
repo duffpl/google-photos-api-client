@@ -20,7 +20,7 @@ type AlbumsService interface {
 	Share(id string, options SharedAlbumOptions, ctx context.Context) (*AlbumShareInfo, error)
 	Unshare(id string, ctx context.Context) error
 	Get(id string, ctx context.Context) (*Album, error)
-	Create(album Album, ctx context.Context) (*Album, error)
+	Create(title string, ctx context.Context) (*Album, error)
 	List(options *AlbumsListOptions, pageToken string, ctx context.Context) (result []Album, nextPageToken string, err error)
 	ListAll(options *AlbumsListOptions, ctx context.Context) ([]Album, error)
 	ListAllAsync(options *AlbumsListOptions, ctx context.Context) (<-chan Album, <-chan error)
@@ -50,7 +50,7 @@ type HttpAlbumsService struct {
 // Doc: https://developers.google.com/photos/library/reference/rest/v1/albums/addEnrichment
 func (s HttpAlbumsService) AddEnrichment(albumId string, enrichment NewEnrichmentItem, ctx context.Context) (*EnrichmentItem, error) {
 	responseModel := &EnrichmentItem{}
-	err := s.c.FetchWithPost(s.path+"/"+albumId+":addEnrichment", nil, enrichment, responseModel, ctx)
+	err := s.c.PostJSON(s.path+"/"+albumId+":addEnrichment", nil, enrichment, responseModel, nil, ctx)
 	if err != nil {
 		return nil, fmt.Errorf("cannot add enrichment: %w", err)
 	}
@@ -65,7 +65,7 @@ func (s HttpAlbumsService) BatchRemoveMediaItems(albumId string, mediaItemIds []
 		return errors.New("maximum allowed IDs is 50")
 	}
 	body := mediaItemsRequestBody{mediaItemIds}
-	err := s.c.FetchWithPost(s.path+"/"+albumId+":batchRemoveMediaItems", nil, body, nil, ctx)
+	err := s.c.PostJSON(s.path+"/"+albumId+":batchRemoveMediaItems", nil, body, nil, nil, ctx)
 	if err != nil {
 		return fmt.Errorf("cannot batch remove media items: %w", err)
 	}
@@ -112,7 +112,7 @@ func (s HttpAlbumsService) BatchAddMediaItems(albumId string, mediaItemIds []str
 		return errors.New("maximum allowed IDs is 50")
 	}
 	body := mediaItemsRequestBody{mediaItemIds}
-	err := s.c.FetchWithPost(s.path+"/"+albumId+":batchAddMediaItems", nil, body, nil, ctx)
+	err := s.c.PostJSON(s.path+"/"+albumId+":batchAddMediaItems", nil, body, nil, nil, ctx)
 	if err != nil {
 		return fmt.Errorf("cannot batch add media items: %w", err)
 	}
@@ -123,7 +123,7 @@ func (s HttpAlbumsService) BatchAddMediaItems(albumId string, mediaItemIds []str
 //
 // Doc: https://developers.google.com/photos/library/reference/rest/v1/albums/unshare
 func (s HttpAlbumsService) Unshare(id string, ctx context.Context) error {
-	err := s.c.FetchWithPost(s.path+"/"+id+":unshare", nil, nil, nil, ctx)
+	err := s.c.PostJSON(s.path+"/"+id+":unshare", nil, nil, nil, nil, ctx)
 	if err != nil {
 		return fmt.Errorf("cannot unshare album: %w", err)
 	}
@@ -135,7 +135,7 @@ func (s HttpAlbumsService) Unshare(id string, ctx context.Context) error {
 // Doc: https://developers.google.com/photos/library/reference/rest/v1/albums/share
 func (s HttpAlbumsService) Share(id string, options SharedAlbumOptions, ctx context.Context) (*AlbumShareInfo, error) {
 	responseModel := &AlbumShareInfo{}
-	err := s.c.FetchWithPost(s.path+"/"+id+":share", nil, options, responseModel, ctx)
+	err := s.c.PostJSON(s.path+"/"+id+":share", nil, options, responseModel, nil, ctx)
 	if err != nil {
 		return nil, fmt.Errorf("cannot share album: %w", err)
 	}
@@ -145,9 +145,13 @@ func (s HttpAlbumsService) Share(id string, options SharedAlbumOptions, ctx cont
 // Create new album
 //
 // Doc: https://developers.google.com/photos/library/reference/rest/v1/albums/create
-func (s HttpAlbumsService) Create(album Album, ctx context.Context) (*Album, error) {
+func (s HttpAlbumsService) Create(title string, ctx context.Context) (*Album, error) {
 	responseModel := &Album{}
-	err := s.c.FetchWithPost(s.path, nil, album, responseModel, ctx)
+	err := s.c.PostJSON(s.path, nil, createAlbumInput{
+		Album: Album{
+			Title: title,
+		},
+	}, responseModel, nil, ctx)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create album: %w", err)
 	}
@@ -159,7 +163,7 @@ func (s HttpAlbumsService) Create(album Album, ctx context.Context) (*Album, err
 // Doc: https://developers.google.com/photos/library/reference/rest/v1/albums/get
 func (s HttpAlbumsService) Get(id string, ctx context.Context) (*Album, error) {
 	responseModel := &Album{}
-	err := s.c.FetchWithGet(s.path+"/"+id, nil, responseModel, ctx)
+	err := s.c.FetchWithGet(s.path+"/"+id, nil, responseModel, nil, ctx)
 	if err != nil {
 		return nil, fmt.Errorf("cannot fetch album: %w", err)
 	}
@@ -184,7 +188,7 @@ func (s HttpAlbumsService) List(options *AlbumsListOptions, pageToken string, ct
 		pageToken,
 	}
 	responseModel := &getAlbumsResponse{}
-	err = s.c.FetchWithGet(s.path, optionsWithToken, responseModel, ctx)
+	err = s.c.FetchWithGet(s.path, optionsWithToken, responseModel, nil, ctx)
 	if err != nil {
 		return nil, "", fmt.Errorf("cannot process request: %w", err)
 	}

@@ -1,14 +1,14 @@
 package albums
 
 type Album struct {
-	ID                    string         `json:"id"`
+	ID                    string         `json:"id,omitempty"`
 	Title                 string         `json:"title"`
-	ProductURL            string         `json:"productUrl"`
-	IsWriteable           bool           `json:"isWriteable"`
-	ShareInfo             AlbumShareInfo `json:"shareInfo"`
-	MediaItemsCount       string         `json:"mediaItemsCount"`
-	CoverPhotoBaseURL     string         `json:"coverPhotoBaseUrl"`
-	CoverPhotoMediaItemID string         `json:"coverPhotoMediaItemId"`
+	ProductURL            string         `json:"productUrl,omitempty"`
+	IsWriteable           bool           `json:"isWriteable,omitempty"`
+	ShareInfo             AlbumShareInfo `json:"shareInfo,omitempty"`
+	MediaItemsCount       string         `json:"mediaItemsCount,omitempty"`
+	CoverPhotoBaseURL     string         `json:"coverPhotoBaseUrl,omitempty"`
+	CoverPhotoMediaItemID string         `json:"coverPhotoMediaItemId,omitempty"`
 }
 
 type AlbumShareInfo struct {

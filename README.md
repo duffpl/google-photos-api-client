@@ -76,3 +76,4 @@ albums, err := apiClient.Albums.ListAll(
 ## To do
 - [ ] tests
 - [ ] implement all endpoints
+- [ ] add validation to request options structs 

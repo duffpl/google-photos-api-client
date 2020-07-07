@@ -1,6 +1,8 @@
 package media_items
 
-import "github.com/duffpl/google-photos-api-client/common"
+import (
+	"github.com/duffpl/google-photos-api-client/internal"
+)
 
 type mediaItemsResponse struct {
 	MediaItems    []MediaItem `json:"mediaItems"`
@@ -23,8 +25,8 @@ type MediaItem struct {
 }
 
 type MediaItemWithStatus struct {
-	MediaItem MediaItem        `json:"mediaItem"`
-	Status    common.APIStatus `json:"status"`
+	MediaItem MediaItem          `json:"mediaItem"`
+	Status    internal.APIStatus `json:"status"`
 }
 
 type MediaMetadata struct {
@@ -54,4 +56,14 @@ type VideoMetadata struct {
 type ContributorInfo struct {
 	ProfilePictureBaseURL string `json:"profilePictureBaseUrl"`
 	DisplayName           string `json:"displayName"`
+}
+
+type batchCreateResponse struct {
+	NewMediaItemResults []NewMediaItemResult `json:"newMediaItemResults"`
+}
+
+type NewMediaItemResult struct {
+	UploadToken string             `json:"uploadToken"`
+	Status      internal.APIStatus `json:"status"`
+	MediaItem   MediaItem          `json:"mediaItem"`
 }

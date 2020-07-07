@@ -4,11 +4,9 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"github.com/duffpl/google-photos-api-client/common"
 	"github.com/google/go-querystring/query"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 )
@@ -23,18 +21,35 @@ func NewHttpClient(c *http.Client) *HttpClient {
 	}
 }
 
-func (c *HttpClient) FetchWithGet(path string, queryValues interface{}, responseModel interface{}, ctx context.Context) error {
+func (c *HttpClient) FetchWithGet(path string, queryValues interface{}, responseModel interface{}, reqCb func(req *http.Request), ctx context.Context) error {
 	req, err := prepareGetRequest(path, queryValues, ctx)
 	if err != nil {
 		return fmt.Errorf("cannot prepare request: %w", err)
 	}
+	if reqCb != nil {
+		reqCb(req)
+	}
 	return c.fetchRequest(err, req, responseModel)
 }
 
-func (c *HttpClient) FetchWithPost(path string, queryValues interface{}, body interface{}, responseModel interface{}, ctx context.Context) error {
-	req, err := preparePostRequest(path, queryValues, body, ctx)
+func (c *HttpClient) PostJSON(path string, queryValues interface{}, body interface{}, responseModel interface{}, reqCb func(req *http.Request), ctx context.Context) error {
+	req, err := prepareJsonPostRequest(path, queryValues, body, ctx)
 	if err != nil {
 		return fmt.Errorf("cannot prepare request: %w", err)
+	}
+	if reqCb != nil {
+		reqCb(req)
+	}
+	return c.fetchRequest(err, req, responseModel)
+}
+
+func (c *HttpClient) PostFile(path string, queryValues interface{}, file io.Reader, responseModel interface{}, reqCb func(req *http.Request), ctx context.Context) error {
+	req, err := prepareFilePostRequest(path, queryValues, file, ctx)
+	if err != nil {
+		return fmt.Errorf("cannot prepare request: %w", err)
+	}
+	if reqCb != nil {
+		reqCb(req)
 	}
 	return c.fetchRequest(err, req, responseModel)
 }
@@ -44,37 +59,26 @@ func (c *HttpClient) fetchRequest(err error, req *http.Request, responseModel in
 	if err != nil {
 		return fmt.Errorf("cannot fetch response: %w", err)
 	}
-	errorReturned := false
-	if res.StatusCode >= 400 {
-		if res.StatusCode == 404 {
-			return errors.New("url not found")
-		}
-		responseModel = &common.ErrorResponse{}
-		errorReturned = true
+	err = GetErrorFromResponse(res)
+	if err != nil {
+		return fmt.Errorf("invalid response: %w", err)
 	}
-	err = unmarshalResponse(res, responseModel)
+	err = UnmarshalResponse(res, responseModel)
 	if err != nil {
 		return fmt.Errorf("cannot unmarshal response: %w", err)
 	}
-	if errorReturned {
-		return responseModel.(*common.ErrorResponse).Error
-	}
 	return nil
 }
 
-func unmarshalResponse(res *http.Response, dst interface{}) error {
-	b, err := ioutil.ReadAll(res.Body)
+func prepareFilePostRequest(path string, queryValues interface{}, file io.Reader, ctx context.Context) (*http.Request, error) {
+	reqUrl, err := prepareRequestURL(path, queryValues)
 	if err != nil {
-		return fmt.Errorf("cannot read body bytes: %w", err)
+		return nil, fmt.Errorf("cannot prepare request url: %w", err)
 	}
-	err = json.Unmarshal(b, dst)
-	if err != nil {
-		return fmt.Errorf("json unmarshal common: %w", err)
-	}
-	return nil
-}
+	return http.NewRequestWithContext(ctx, http.MethodPost, reqUrl.String(), file)
 
-func preparePostRequest(path string, queryValues interface{}, body interface{}, ctx context.Context) (*http.Request, error) {
+}
+func prepareJsonPostRequest(path string, queryValues interface{}, body interface{}, ctx context.Context) (*http.Request, error) {
 	reqUrl, err := prepareRequestURL(path, queryValues)
 	if err != nil {
 		return nil, fmt.Errorf("cannot prepare request url: %w", err)
@@ -83,7 +87,8 @@ func preparePostRequest(path string, queryValues interface{}, body interface{}, 
 	if err != nil {
 		return nil, fmt.Errorf("cannot marshal body: %w", err)
 	}
-	return http.NewRequestWithContext(ctx, http.MethodPost, reqUrl.String(), bytes.NewReader(jsonBody))
+	bodyReader := bytes.NewReader(jsonBody)
+	return http.NewRequestWithContext(ctx, http.MethodPost, reqUrl.String(), bodyReader)
 }
 
 func prepareRequestURL(path string, queryValues interface{}) (*url.URL, error) {

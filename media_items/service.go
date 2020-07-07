@@ -4,10 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/duffpl/google-photos-api-client/albums"
 	"github.com/duffpl/google-photos-api-client/internal"
+	"github.com/duffpl/google-photos-api-client/uploader"
 	"github.com/imdario/mergo"
 	"net/http"
 	"net/url"
+	"path"
 )
 
 // Interface for https://developers.google.com/photos/library/reference/rest/v1/mediaItems resource
@@ -22,11 +25,50 @@ type MediaItemsService interface {
 	BatchGetItems(ids []string, ctx context.Context) (mediaItems []MediaItemWithStatus, err error)
 	BatchGetItemsAll(ids []string, ctx context.Context) ([]MediaItemWithStatus, error)
 	BatchGetItemsAllAsync(ids []string, ctx context.Context) (<-chan MediaItemWithStatus, <-chan error)
+	BatchCreateItems(options BatchCreateOptions, ctx context.Context) ([]NewMediaItemResult, error)
+	BatchCreateItemsFromFiles(albumId string, paths []string, position albums.AlbumPosition, ctx context.Context) ([]NewMediaItemResult, error)
 }
 
 type HttpMediaItemsService struct {
 	c    *internal.HttpClient
+	u    uploader.MediaUploader
 	path string
+}
+
+func (s HttpMediaItemsService) BatchCreateItems(options BatchCreateOptions, ctx context.Context) ([]NewMediaItemResult, error) {
+	responseModel := &batchCreateResponse{}
+	err := s.c.PostJSON(s.path+":batchCreate", nil, options, responseModel, nil, ctx)
+	if err != nil {
+		return nil, fmt.Errorf("cannot complete request: %w", err)
+	}
+	return responseModel.NewMediaItemResults, nil
+}
+
+// Utility method for easier
+func (s HttpMediaItemsService) BatchCreateItemsFromFiles(albumId string, paths []string, position albums.AlbumPosition, ctx context.Context) ([]NewMediaItemResult, error) {
+	mediaItems := make([]NewMediaItem, 0)
+	for _, filePath := range paths {
+		fileName := path.Base(filePath)
+		token, err := s.u.UploadFile(filePath, ctx)
+		if err != nil {
+			return nil, fmt.Errorf("cannot upload file '%s': %w", fileName, err)
+		}
+		mediaItems = append(mediaItems, NewMediaItem{
+			SimpleMediaItem: SimpleMediaItem{
+				UploadToken: token,
+				FileName:    fileName,
+			},
+		})
+	}
+	result, err := s.BatchCreateItems(BatchCreateOptions{
+		AlbumId:       albumId,
+		AlbumPosition: position,
+		NewMediaItems: mediaItems,
+	}, ctx)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create items: %w", err)
+	}
+	return result, nil
 }
 
 // Fetches media item specified by ID
@@ -35,7 +77,7 @@ type HttpMediaItemsService struct {
 func (s HttpMediaItemsService) Get(itemId string, ctx context.Context) (mediaItem *MediaItem, err error) {
 	q := url.Values{"mediaItemId": []string{itemId}}
 	responseModel := &MediaItem{}
-	err = s.c.FetchWithGet(s.path, q, responseModel, ctx)
+	err = s.c.FetchWithGet(s.path, q, responseModel, nil, ctx)
 	if err != nil {
 		return nil, fmt.Errorf("cannot complete request: %w", err)
 	}
@@ -51,7 +93,7 @@ func (s HttpMediaItemsService) BatchGetItems(ids []string, ctx context.Context) 
 	}
 	q := url.Values{"mediaItemIds": ids}
 	responseModel := &batchGetMediaItemsResponse{}
-	err = s.c.FetchWithGet(s.path+":batchGet", q, responseModel, ctx)
+	err = s.c.FetchWithGet(s.path+":batchGet", q, responseModel, nil, ctx)
 	if err != nil {
 		return nil, fmt.Errorf("cannot complete request: %w", err)
 	}
@@ -128,7 +170,7 @@ func (s HttpMediaItemsService) List(options *ListOptions, pageToken string, ctx 
 		requestOptions,
 		pageToken,
 	}
-	err = s.c.FetchWithGet(s.path, optionsWithToken, responseModel, ctx)
+	err = s.c.FetchWithGet(s.path, optionsWithToken, responseModel, nil, ctx)
 	if err != nil {
 		return nil, "", fmt.Errorf("cannot complete request: %w", err)
 	}
@@ -204,7 +246,7 @@ func (s HttpMediaItemsService) Search(options *SearchOptions, pageToken string, 
 		requestOptions,
 		pageToken,
 	}
-	err = s.c.FetchWithPost(s.path+":search", nil, optionsWithToken, responseModel, ctx)
+	err = s.c.PostJSON(s.path+":search", nil, optionsWithToken, responseModel, nil, ctx)
 	if err != nil {
 		return nil, "", fmt.Errorf("cannot complete request: %w", err)
 	}
@@ -263,9 +305,10 @@ func (s HttpMediaItemsService) SearchAllAsync(options *SearchOptions, ctx contex
 	return itemsC, errorsC
 }
 
-func NewHttpMediaItemsService(httpClient *http.Client) HttpMediaItemsService {
+func NewHttpMediaItemsService(httpClient *http.Client, uploader uploader.MediaUploader) HttpMediaItemsService {
 	return HttpMediaItemsService{
 		c:    internal.NewHttpClient(httpClient),
+		u:    uploader,
 		path: "v1/mediaItems",
 	}
 }

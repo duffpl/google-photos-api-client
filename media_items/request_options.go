@@ -1,5 +1,7 @@
 package media_items
 
+import "github.com/duffpl/google-photos-api-client/albums"
+
 type ListOptions struct {
 	PageSize int `url:"pageSize"`
 }
@@ -46,4 +48,20 @@ type DateFilterRangeItem struct {
 
 type FeatureFilter struct {
 	IncludedFeatures []Feature `json:"includedFeatures,omitEmpty"`
+}
+
+type BatchCreateOptions struct {
+	AlbumId       string               `json:"albumId"`
+	AlbumPosition albums.AlbumPosition `json:"albumPosition"`
+	NewMediaItems []NewMediaItem       `json:"newMediaItems"`
+}
+
+type SimpleMediaItem struct {
+	UploadToken string `json:"uploadToken"`
+	FileName    string `json:"fileName"`
+}
+
+type NewMediaItem struct {
+	Description     string          `json:"description"`
+	SimpleMediaItem SimpleMediaItem `json:"simpleMediaItem"`
 }
