@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.1] - 2020-08-06
+
+### Added
+
+- LICENSE file (thx tgulacsi)
+
 ## [0.1.0] - 2020-08-06
 
 ### Added
