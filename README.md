@@ -11,9 +11,9 @@ It seems that API is pretty stable so I guess that client should be working in u
 
 Besides basic API communication all methods have their async/sync wrappers for consuming results on the go and not caring about pagination. 
  
-I'm not sure when (or if) I'll be implementing methods I don't need (like uploading which is pretty broken IMHO since uploaded images are always consuming Google Drive space).
+Uploading media items has basic implementation - no partial/resumable uploads. To make life a bit easier there is method that allows batch uploading files specified by path into choosen album.
 
-Error handling might be a bit flaky but should be ok.
+Error handling might be a bit flaky but should be OK.
 
 [godoc documentation](https://godoc.org/github.com/duffpl/google-photos-api-client)
 
@@ -30,7 +30,7 @@ Based on https://developers.google.com/photos/library/reference/rest/v1/albums
 * [x] [albums.share](https://developers.google.com/photos/library/reference/rest/v1/albums/share)
 * [x] [albums.unshare](https://developers.google.com/photos/library/reference/rest/v1/albums/unshare)
 ### Media items
-* [ ] [mediaItems.batchCreate](https://developers.google.com/photos/library/reference/rest/v1/mediaItems/batchCreate)
+* [x] [mediaItems.batchCreate](https://developers.google.com/photos/library/reference/rest/v1/mediaItems/batchCreate)
 * [x] [mediaItems.batchGet](https://developers.google.com/photos/library/reference/rest/v1/mediaItems/batchGet)
 * [x] [mediaItems.get](https://developers.google.com/photos/library/reference/rest/v1/mediaItems/get)
 * [x] [mediaItems.list](https://developers.google.com/photos/library/reference/rest/v1/mediaItems/list)
@@ -74,6 +74,7 @@ albums, err := apiClient.Albums.ListAll(
 ```
 
 ## To do
-- [ ] tests
-- [ ] implement all endpoints
+- [ ] functional tests that'll check if API didn't change
+- [ ] unit tests
+- [ ] implement all endpoints (almost there)
 - [ ] add validation to request options structs 
