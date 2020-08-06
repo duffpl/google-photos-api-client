@@ -34,7 +34,9 @@ type HttpMediaItemsService struct {
 	u    uploader.MediaUploader
 	path string
 }
-
+// Create one or multiple media items
+//
+// Doc: https://developers.google.com/photos/library/reference/rest/v1/mediaItems/batchCreate
 func (s HttpMediaItemsService) BatchCreateItems(options BatchCreateOptions, ctx context.Context) ([]NewMediaItemResult, error) {
 	responseModel := &batchCreateResponse{}
 	err := s.c.PostJSON(s.path+":batchCreate", nil, options, responseModel, nil, ctx)
@@ -44,7 +46,7 @@ func (s HttpMediaItemsService) BatchCreateItems(options BatchCreateOptions, ctx 
 	return responseModel.NewMediaItemResults, nil
 }
 
-// Utility method for easier
+// Extension of BatchCreateItems for easier uploading (at this moment it's limited by
 func (s HttpMediaItemsService) BatchCreateItemsFromFiles(albumId string, paths []string, position albums.AlbumPosition, ctx context.Context) ([]NewMediaItemResult, error) {
 	mediaItems := make([]NewMediaItem, 0)
 	for _, filePath := range paths {

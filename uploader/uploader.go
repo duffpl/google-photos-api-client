@@ -19,6 +19,8 @@ type HttpMediaUploader struct {
 }
 
 // Uploads file specified by path. Returns upload token
+//
+// Doc: https://developers.google.com/photos/library/guides/upload-media
 func (h HttpMediaUploader) UploadFile(filePath string, ctx context.Context) (string, error) {
 	f, err := os.Open(filePath)
 	if err != nil {
