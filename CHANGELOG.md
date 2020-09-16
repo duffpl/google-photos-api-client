@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.2.0] - 2020-09-16
+
+### Added
+
+- Patch method for albums
+- Patch method for mediaItems
+- Shared Albums service
+
+### Changed
+
+- Refactored a bit internal HTTP client
+- Reordered methods in service interfaces to reflect ordering on Googles documentation pages
+
 ## [0.1.1] - 2020-08-06
 
 ### Added

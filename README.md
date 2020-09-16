@@ -27,6 +27,7 @@ Based on https://developers.google.com/photos/library/reference/rest/v1/albums
 * [x] [albums.create](https://developers.google.com/photos/library/reference/rest/v1/albums/create)
 * [x] [albums.get](https://developers.google.com/photos/library/reference/rest/v1/albums/get)
 * [x] [albums.list](https://developers.google.com/photos/library/reference/rest/v1/albums/list)
+* [x] [albums.patch](https://developers.google.com/photos/library/reference/rest/v1/albums/patch)
 * [x] [albums.share](https://developers.google.com/photos/library/reference/rest/v1/albums/share)
 * [x] [albums.unshare](https://developers.google.com/photos/library/reference/rest/v1/albums/unshare)
 ### Media items
@@ -34,12 +35,13 @@ Based on https://developers.google.com/photos/library/reference/rest/v1/albums
 * [x] [mediaItems.batchGet](https://developers.google.com/photos/library/reference/rest/v1/mediaItems/batchGet)
 * [x] [mediaItems.get](https://developers.google.com/photos/library/reference/rest/v1/mediaItems/get)
 * [x] [mediaItems.list](https://developers.google.com/photos/library/reference/rest/v1/mediaItems/list)
+* [x] [mediaItems.patch](https://developers.google.com/photos/library/reference/rest/v1/mediaItems/patch)
 * [x] [mediaItems.search](https://developers.google.com/photos/library/reference/rest/v1/mediaItems/search)
 ### Shared albums
-* [ ] [sharedAlbums.get](https://developers.google.com/photos/library/reference/rest/v1/sharedAlbums/get)
-* [ ] [sharedAlbums.join](https://developers.google.com/photos/library/reference/rest/v1/sharedAlbums/join)
-* [ ] [sharedAlbums.leave](https://developers.google.com/photos/library/reference/rest/v1/sharedAlbums/leave)
-* [ ] [sharedAlbums.list](https://developers.google.com/photos/library/reference/rest/v1/sharedAlbums/list)
+* [x] [sharedAlbums.get](https://developers.google.com/photos/library/reference/rest/v1/sharedAlbums/get)
+* [x] [sharedAlbums.join](https://developers.google.com/photos/library/reference/rest/v1/sharedAlbums/join)
+* [x] [sharedAlbums.leave](https://developers.google.com/photos/library/reference/rest/v1/sharedAlbums/leave)
+* [x] [sharedAlbums.list](https://developers.google.com/photos/library/reference/rest/v1/sharedAlbums/list)
 
 ## Usage
 
@@ -76,5 +78,5 @@ albums, err := apiClient.Albums.ListAll(
 ## To do
 - [ ] functional tests that'll check if API didn't change
 - [ ] unit tests
-- [ ] implement all endpoints (almost there)
+- [x] implement all endpoints (almost there)
 - [ ] add validation to request options structs 

@@ -11,22 +11,24 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strings"
 )
 
 // Interface for https://developers.google.com/photos/library/reference/rest/v1/mediaItems resource
 type MediaItemsService interface {
+	BatchCreateItems(options BatchCreateOptions, ctx context.Context) ([]NewMediaItemResult, error)
+	BatchCreateItemsFromFiles(albumId string, paths []string, position albums.AlbumPosition, ctx context.Context) ([]NewMediaItemResult, error)
+	BatchGetItems(ids []string, ctx context.Context) (mediaItems []MediaItemWithStatus, err error)
+	BatchGetItemsAll(ids []string, ctx context.Context) ([]MediaItemWithStatus, error)
+	BatchGetItemsAllAsync(ids []string, ctx context.Context) (<-chan MediaItemWithStatus, <-chan error)
 	Get(itemId string, ctx context.Context) (mediaItem *MediaItem, err error)
 	List(options *ListOptions, pageToken string, ctx context.Context) (mediaItems []MediaItem, nextPageToken string, err error)
 	ListAll(options *ListOptions, ctx context.Context) ([]MediaItem, error)
 	ListAllAsync(options *ListOptions, ctx context.Context) (<-chan MediaItem, <-chan error)
+	Patch(mediaItem MediaItem, updateMask []Field, ctx context.Context) (*MediaItem, error)
 	Search(options *SearchOptions, pageToken string, ctx context.Context) (mediaItems []MediaItem, nextPageToken string, err error)
 	SearchAll(options *SearchOptions, ctx context.Context) ([]MediaItem, error)
 	SearchAllAsync(options *SearchOptions, ctx context.Context) (<-chan MediaItem, <-chan error)
-	BatchGetItems(ids []string, ctx context.Context) (mediaItems []MediaItemWithStatus, err error)
-	BatchGetItemsAll(ids []string, ctx context.Context) ([]MediaItemWithStatus, error)
-	BatchGetItemsAllAsync(ids []string, ctx context.Context) (<-chan MediaItemWithStatus, <-chan error)
-	BatchCreateItems(options BatchCreateOptions, ctx context.Context) ([]NewMediaItemResult, error)
-	BatchCreateItemsFromFiles(albumId string, paths []string, position albums.AlbumPosition, ctx context.Context) ([]NewMediaItemResult, error)
 }
 
 type HttpMediaItemsService struct {
@@ -34,6 +36,27 @@ type HttpMediaItemsService struct {
 	u    uploader.MediaUploader
 	path string
 }
+
+// Patches MediaItem. updateMask argument can be used to update only selected fields. Currently only id and description fields are read
+//
+// Doc: https://developers.google.com/photos/library/reference/rest/v1/mediaItems/patch
+func (s HttpMediaItemsService) Patch(mediaItem MediaItem, updateMask []Field, ctx context.Context) (*MediaItem, error) {
+	responseModel := &MediaItem{}
+	queryValues := url.Values{}
+	if len(updateMask) > 0 {
+		fields := []string{}
+		for i := range updateMask {
+			fields = append(fields, string(updateMask[i]))
+		}
+		queryValues["updateMask"] = []string{strings.Join(fields, ",")}
+	}
+	err := s.c.PatchJSON(s.path+"/"+mediaItem.ID, queryValues, mediaItem, responseModel, nil, ctx)
+	if err != nil {
+		return nil, err
+	}
+	return responseModel, nil
+}
+
 // Create one or multiple media items
 //
 // Doc: https://developers.google.com/photos/library/reference/rest/v1/mediaItems/batchCreate

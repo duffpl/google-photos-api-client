@@ -9,3 +9,11 @@ const (
 	AlbumPositionTypeAfterMediaItem      AlbumPositionType = "AFTER_MEDIA_ITEM"
 	AlbumPositionTypeAfterEnrichmentItem AlbumPositionType = "AFTER_ENRICHMENT_ITEM"
 )
+
+// Used for updateMask attribute in patch method
+type Field string
+
+const (
+	AlbumFieldTitle                 Field = "title"
+	AlbumFieldCoverPhotoMediaItemId Field = "coverPhotoMediaItemId"
+)

@@ -8,22 +8,25 @@ import (
 	"github.com/imdario/mergo"
 	"math"
 	"net/http"
+	"net/url"
+	"strings"
 )
 
 // Interface for https://developers.google.com/photos/library/reference/rest/v1/albums resource
 type AlbumsService interface {
 	AddEnrichment(albumId string, enrichment NewEnrichmentItem, ctx context.Context) (*EnrichmentItem, error)
-	BatchRemoveMediaItems(albumId string, mediaItemIds []string, ctx context.Context) error
-	BatchRemoveMediaItemsAll(albumId string, mediaItemIds []string, ctx context.Context) error
 	BatchAddMediaItems(albumId string, mediaItemIds []string, ctx context.Context) error
 	BatchAddMediaItemsAll(albumId string, mediaItemIds []string, ctx context.Context) error
-	Share(id string, options SharedAlbumOptions, ctx context.Context) (*AlbumShareInfo, error)
-	Unshare(id string, ctx context.Context) error
-	Get(id string, ctx context.Context) (*Album, error)
+	BatchRemoveMediaItems(albumId string, mediaItemIds []string, ctx context.Context) error
+	BatchRemoveMediaItemsAll(albumId string, mediaItemIds []string, ctx context.Context) error
 	Create(title string, ctx context.Context) (*Album, error)
+	Get(id string, ctx context.Context) (*Album, error)
 	List(options *AlbumsListOptions, pageToken string, ctx context.Context) (result []Album, nextPageToken string, err error)
 	ListAll(options *AlbumsListOptions, ctx context.Context) ([]Album, error)
 	ListAllAsync(options *AlbumsListOptions, ctx context.Context) (<-chan Album, <-chan error)
+	Patch(album Album, fieldMask []Field, ctx context.Context) (*Album, error)
+	Share(id string, options SharedAlbumOptions, ctx context.Context) (*AlbumShareInfo, error)
+	Unshare(id string, ctx context.Context) error
 }
 
 type AlbumsListOptions struct {
@@ -244,6 +247,27 @@ func (s HttpAlbumsService) ListAllAsync(options *AlbumsListOptions, ctx context.
 		}
 	}()
 	return albumsC, errorsC
+}
+
+// Patches album. updateMask argument can be used to update only selected fields. Currently only id, title
+// and coverPhotoMediaItemId are read
+//
+// Doc: https://developers.google.com/photos/library/reference/rest/v1/albums/patch
+func (s HttpAlbumsService) Patch(album Album, updateMask []Field, ctx context.Context) (*Album, error) {
+	responseModel := &Album{}
+	queryValues := url.Values{}
+	if len(updateMask) > 0 {
+		fields := []string{}
+		for i := range updateMask {
+			fields = append(fields, string(updateMask[i]))
+		}
+		queryValues["updateMask"] = []string{strings.Join(fields, ",")}
+	}
+	err := s.c.PatchJSON(s.path+"/"+album.ID, queryValues, album, responseModel, nil, ctx)
+	if err != nil {
+		return nil, err
+	}
+	return responseModel, nil
 }
 
 func NewHttpAlbumsService(authenticatedClient *http.Client) HttpAlbumsService {

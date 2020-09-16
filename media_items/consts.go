@@ -48,3 +48,10 @@ const (
 	MediaTypeFilterVideo    MediaType = "VIDEO"
 	MediaTypeFilterAllMedia MediaType = "ALL_MEDIA"
 )
+
+// Used for updateMask attribute in patch method
+type Field string
+
+const (
+	MediaItemFieldDescription Field = "description"
+)
