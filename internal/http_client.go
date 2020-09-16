@@ -33,7 +33,15 @@ func (c *HttpClient) FetchWithGet(path string, queryValues interface{}, response
 }
 
 func (c *HttpClient) PostJSON(path string, queryValues interface{}, body interface{}, responseModel interface{}, reqCb func(req *http.Request), ctx context.Context) error {
-	req, err := prepareJsonPostRequest(path, queryValues, body, ctx)
+	return c.doJSONRequest(path, queryValues, body, http.MethodPost, responseModel, reqCb, ctx)
+}
+
+func (c *HttpClient) PatchJSON(path string, queryValues interface{}, body interface{}, responseModel interface{}, reqCb func(req *http.Request), ctx context.Context) error {
+	return c.doJSONRequest(path, queryValues, body, http.MethodPatch, responseModel, reqCb, ctx)
+}
+
+func (c *HttpClient) PostFile(path string, queryValues interface{}, file io.Reader, responseModel interface{}, reqCb func(req *http.Request), ctx context.Context) error {
+	req, err := prepareFilePostRequest(path, queryValues, file, ctx)
 	if err != nil {
 		return fmt.Errorf("cannot prepare request: %w", err)
 	}
@@ -43,8 +51,8 @@ func (c *HttpClient) PostJSON(path string, queryValues interface{}, body interfa
 	return c.fetchRequest(err, req, responseModel)
 }
 
-func (c *HttpClient) PostFile(path string, queryValues interface{}, file io.Reader, responseModel interface{}, reqCb func(req *http.Request), ctx context.Context) error {
-	req, err := prepareFilePostRequest(path, queryValues, file, ctx)
+func (c *HttpClient) doJSONRequest(path string, queryValues interface{}, body interface{}, method string, responseModel interface{}, reqCb func(req *http.Request), ctx context.Context) error {
+	req, err := prepareJsonRequest(path, queryValues, body, method, ctx)
 	if err != nil {
 		return fmt.Errorf("cannot prepare request: %w", err)
 	}
@@ -78,7 +86,7 @@ func prepareFilePostRequest(path string, queryValues interface{}, file io.Reader
 	return http.NewRequestWithContext(ctx, http.MethodPost, reqUrl.String(), file)
 
 }
-func prepareJsonPostRequest(path string, queryValues interface{}, body interface{}, ctx context.Context) (*http.Request, error) {
+func prepareJsonRequest(path string, queryValues interface{}, body interface{}, method string, ctx context.Context) (*http.Request, error) {
 	reqUrl, err := prepareRequestURL(path, queryValues)
 	if err != nil {
 		return nil, fmt.Errorf("cannot prepare request url: %w", err)
@@ -88,7 +96,7 @@ func prepareJsonPostRequest(path string, queryValues interface{}, body interface
 		return nil, fmt.Errorf("cannot marshal body: %w", err)
 	}
 	bodyReader := bytes.NewReader(jsonBody)
-	return http.NewRequestWithContext(ctx, http.MethodPost, reqUrl.String(), bodyReader)
+	return http.NewRequestWithContext(ctx, method, reqUrl.String(), bodyReader)
 }
 
 func prepareRequestURL(path string, queryValues interface{}) (*url.URL, error) {
