@@ -29,7 +29,7 @@ func (c *HttpClient) FetchWithGet(path string, queryValues interface{}, response
 	if reqCb != nil {
 		reqCb(req)
 	}
-	return c.fetchRequest(err, req, responseModel)
+	return c.fetchRequest(req, responseModel)
 }
 
 func (c *HttpClient) PostJSON(path string, queryValues interface{}, body interface{}, responseModel interface{}, reqCb func(req *http.Request), ctx context.Context) error {
@@ -48,7 +48,7 @@ func (c *HttpClient) PostFile(path string, queryValues interface{}, file io.Read
 	if reqCb != nil {
 		reqCb(req)
 	}
-	return c.fetchRequest(err, req, responseModel)
+	return c.fetchRequest(req, responseModel)
 }
 
 func (c *HttpClient) doJSONRequest(path string, queryValues interface{}, body interface{}, method string, responseModel interface{}, reqCb func(req *http.Request), ctx context.Context) error {
@@ -59,10 +59,10 @@ func (c *HttpClient) doJSONRequest(path string, queryValues interface{}, body in
 	if reqCb != nil {
 		reqCb(req)
 	}
-	return c.fetchRequest(err, req, responseModel)
+	return c.fetchRequest(req, responseModel)
 }
 
-func (c *HttpClient) fetchRequest(err error, req *http.Request, responseModel interface{}) error {
+func (c *HttpClient) fetchRequest(req *http.Request, responseModel interface{}) error {
 	res, err := c.c.Do(req)
 	if err != nil {
 		return fmt.Errorf("cannot fetch response: %w", err)
