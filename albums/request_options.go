@@ -31,7 +31,7 @@ type Location struct {
 
 type NewEnrichmentItem struct {
 	TextEnrichment     TextEnrichment     `json:"textEnrichment,omitempty"`
-	LocationEnrichment LocationEnrichment `json:"locationEnrichment, omitempty"`
+	LocationEnrichment LocationEnrichment `json:"locationEnrichment,omitempty"`
 	MapEnrichment      MapEnrichment      `json:"mapEnrichment,omitempty"`
 }
 

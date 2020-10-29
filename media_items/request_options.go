@@ -8,15 +8,15 @@ type ListOptions struct {
 
 type SearchOptions struct {
 	PageSize int            `json:"pageSize"`
-	AlbumId  string         `json:"albumId,omitEmpty"`
-	Filters  *SearchFilters `json:"filters,omitEmpty"`
+	AlbumId  string         `json:"albumId,omitempty"`
+	Filters  *SearchFilters `json:"filters,omitempty"`
 }
 
 type SearchFilters struct {
-	FeatureFilter            *FeatureFilter   `json:"featureFilter,omitEmpty"`
-	DateFilter               *DateFilter      `json:"dateFilter, omitEmpty"`
-	ContentFilter            *ContentFilter   `json:"contentFilter, omitEmpty"`
-	MediaTypeFilter          *MediaTypeFilter `json:"mediaTypeFilter, omitEmpty"`
+	FeatureFilter            *FeatureFilter   `json:"featureFilter,omitempty"`
+	DateFilter               *DateFilter      `json:"dateFilter,omitempty"`
+	ContentFilter            *ContentFilter   `json:"contentFilter,omitempty"`
+	MediaTypeFilter          *MediaTypeFilter `json:"mediaTypeFilter,omitempty"`
 	IncludeArchivedMedia     bool             `json:"includeArchivedMedia"`
 	ExcludeNonAppCreatedData bool             `json:"excludeNonAppCreatedData"`
 }
@@ -47,7 +47,7 @@ type DateFilterRangeItem struct {
 }
 
 type FeatureFilter struct {
-	IncludedFeatures []Feature `json:"includedFeatures,omitEmpty"`
+	IncludedFeatures []Feature `json:"includedFeatures,omitempty"`
 }
 
 type BatchCreateOptions struct {

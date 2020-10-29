@@ -78,7 +78,7 @@ func (s HttpSharedAlbumsService) List(options *ListOptions, pageToken string, ct
 	}
 	optionsWithToken := struct {
 		ListOptions
-		PageToken string `url:"pageToken,omitEmpty"`
+		PageToken string `url:"pageToken,omitempty"`
 	}{
 		requestOptions,
 		pageToken,

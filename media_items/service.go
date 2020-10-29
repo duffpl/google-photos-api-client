@@ -190,7 +190,7 @@ func (s HttpMediaItemsService) List(options *ListOptions, pageToken string, ctx 
 	}
 	optionsWithToken := struct {
 		ListOptions
-		PageToken string `url:"pageToken,omitEmpty"`
+		PageToken string `url:"pageToken,omitempty"`
 	}{
 		requestOptions,
 		pageToken,
@@ -266,7 +266,7 @@ func (s HttpMediaItemsService) Search(options *SearchOptions, pageToken string, 
 	responseModel := &mediaItemsResponse{}
 	optionsWithToken := struct {
 		SearchOptions
-		PageToken string `json:"pageToken,omitEmpty"`
+		PageToken string `json:"pageToken,omitempty"`
 	}{
 		requestOptions,
 		pageToken,
